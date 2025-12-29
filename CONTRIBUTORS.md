@@ -165,3 +165,8 @@ This project exists because of your time, effort, and curiosity.
 - **Name:** Mohan
 - **GitHub:** https://github.com/aricthecoder
 - **About:** IT Sophomore at IIIT Allahabad
+
+- **Name:** Kunwar Gaba
+- **GitHub:** https://github.com/kunwargaba10
+- **About:** Fresher at IIITA
+
