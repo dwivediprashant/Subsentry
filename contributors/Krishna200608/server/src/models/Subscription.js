@@ -1,15 +1,22 @@
 import mongoose from "mongoose";
+import {
+  BILLING_CYCLES,
+  SUBSCRIPTION_SOURCES,
+  SUBSCRIPTION_STATUS,
+  SUBSCRIPTION_CATEGORIES,
+  DEFAULT_CURRENCY,
+} from "../constants/subscription.constants.js";
 
 const subscriptionSchema = new mongoose.Schema(
   {
-    // Ownership:who thiss Subscription belongs to...
+    // Ownership
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       index: true,
     },
 
-    // Human-readable subscription name (e.g., Netflix,Spotify, Facebook, etcc..)
+    // Subscription name
     name: {
       type: String,
       required: true,
@@ -24,13 +31,21 @@ const subscriptionSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      default: "USD",
+      default: DEFAULT_CURRENCY,
       uppercase: true,
     },
     billingCycle: {
       type: String,
       required: true,
-      enum: ["monthly", "yearly", "weekly", "custom"],
+      enum: Object.values(BILLING_CYCLES),
+      lowercase: true,
+    },
+
+    // Category
+    category: {
+      type: String,
+      enum: Object.values(SUBSCRIPTION_CATEGORIES),
+      default: SUBSCRIPTION_CATEGORIES.OTHER,
       lowercase: true,
     },
 
@@ -49,17 +64,20 @@ const subscriptionSchema = new mongoose.Schema(
       type: Date,
     },
 
-    // Source of subscription data
+    // Source
     source: {
       type: String,
-      default: "manual",
+      enum: Object.values(SUBSCRIPTION_SOURCES),
+      default: SUBSCRIPTION_SOURCES.MANUAL,
       lowercase: true,
     },
 
-    // Logical status (kept minimal)
-    isActive: {
-      type: Boolean,
-      default: true,
+    // Status
+    status: {
+      type: String,
+      enum: Object.values(SUBSCRIPTION_STATUS),
+      default: SUBSCRIPTION_STATUS.ACTIVE,
+      lowercase: true,
     },
   },
   {
