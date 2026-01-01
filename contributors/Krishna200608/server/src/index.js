@@ -2,12 +2,15 @@ import "dotenv/config";
 import express from "express";
 import connectDB from "./config/db.js";
 import cors from "cors";
+import subscriptionRoutes from "./routes/subscription.routes.js";
+
 
 const app = express();
 
 // Middlewares -------------------
 app.use(cors());
 app.use(express.json());
+app.use("/api/subscriptions", subscriptionRoutes);
 
 // API routes ------------------
 app.get("/", (_, res) => {
