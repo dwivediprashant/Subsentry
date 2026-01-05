@@ -8,9 +8,9 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
-import SubscriptionRoute from './Routes/subscription.route.js'
+import SubscriptionRoute from './Routes/subscription.route.js';
 
-app.use('/api/subscription', SubscriptionRoute)
+app.use('/api/subscriptions', SubscriptionRoute);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK' });
