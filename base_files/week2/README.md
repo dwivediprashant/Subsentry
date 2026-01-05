@@ -32,6 +32,10 @@ This build **extends Week 1** and contains the reference implementation for **Is
 - Branding assets:
   - `client/public/logo.png`
   - `client/public/logo.svg`
+- Clerk auth pages:
+  - `client/src/app/sign-in`
+  - `client/src/app/sign-up`
+- Logout handled via `UserButton` in the header.
 
 ---
 

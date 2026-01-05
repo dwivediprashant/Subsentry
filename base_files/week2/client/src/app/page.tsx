@@ -1,4 +1,4 @@
-import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import { SignedIn, SignedOut, SignInButton, SignUpButton } from '@clerk/nextjs';
 import Link from 'next/link';
 
 export default function Home() {
@@ -19,12 +19,11 @@ export default function Home() {
               </button>
             </SignInButton>
 
-            <Link
-              href="/sign-up"
-              className="rounded-full border px-6 py-3 hover:bg-gray-100 transition"
-            >
-              Sign Up
-            </Link>
+            <SignUpButton>
+              <button className="rounded-full border px-6 py-3 hover:bg-gray-100 transition">
+                Sign Up
+              </button>
+            </SignUpButton>
           </SignedOut>
 
           <SignedIn>
