@@ -1,5 +1,11 @@
 const mongoose = require("mongoose");
 
+const {
+  BILLING_CYCLES,
+  SUBSCRIPTION_STATUSES,
+  SUBSCRIPTION_SOURCES,
+} = require("../../constants/subscriptionConstants");
+
 const SubscriptionSchema = new mongoose.Schema(
   {
     userId: {
@@ -9,7 +15,7 @@ const SubscriptionSchema = new mongoose.Schema(
     },
 
     name: {
-      type: String, //platforms
+      type: String, // platform name
       required: true,
     },
 
@@ -20,14 +26,14 @@ const SubscriptionSchema = new mongoose.Schema(
 
     billingCycle: {
       type: String,
-      enum: ["monthly", "yearly"],
+      enum: Object.values(BILLING_CYCLES),
       required: true,
     },
 
     status: {
       type: String,
-      enum: ["active", "trial", "cancelled", "expired"],
-      default: "active",
+      enum: Object.values(SUBSCRIPTION_STATUSES),
+      default: SUBSCRIPTION_STATUSES.ACTIVE,
     },
 
     isTrial: {
@@ -46,7 +52,7 @@ const SubscriptionSchema = new mongoose.Schema(
 
     source: {
       type: String,
-      enum: ["manual", "gmail", "stripe", "razorpay"],
+      enum: Object.values(SUBSCRIPTION_SOURCES),
       required: true,
     },
 
