@@ -1,5 +1,7 @@
+import { BILLING_CYCLES } from '../constants/subscription.constants.js';
+
 export const validateCreateSubscription = (data) => {
-  const requiredFields = ["name", "price", "billingCycle", "renewalDate"];
+  const requiredFields = ['name', 'amount', 'billingCycle', 'renewalDate'];
 
   for (const field of requiredFields) {
     if (!data[field]) {
@@ -7,12 +9,16 @@ export const validateCreateSubscription = (data) => {
     }
   }
 
-  if (typeof data.price !== "number" || data.price < 0) {
-    return "Price must be a non-negative number";
+  if (typeof data.amount !== 'number' || data.amount < 0) {
+    return 'Amount must be a non-negative number';
+  }
+
+  if (!Object.values(BILLING_CYCLES).includes(data.billingCycle)) {
+    return 'Invalid billing cycle';
   }
 
   if (data.isTrial && !data.trialEndsAt) {
-    return "trialEndsAt is required when isTrial is true";
+    return 'trialEndsAt is required when isTrial is true';
   }
 
   return null;
