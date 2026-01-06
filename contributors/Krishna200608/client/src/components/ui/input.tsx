@@ -17,6 +17,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           'transition-all duration-200',
           'focus:outline-none focus:ring-2 focus:ring-offset-0',
           'disabled:cursor-not-allowed disabled:opacity-50',
+          // Style date/time picker icons to be white
+          '[&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert',
+          '[&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70',
+          '[&::-webkit-calendar-picker-indicator]:hover:opacity-100',
           error
             ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20'
             : 'border-[#2a2a2a] focus:border-blue-500 focus:ring-blue-500/20 hover:border-[#3a3a3a]',

@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
   Select,
   SelectContent,
@@ -42,9 +43,9 @@ interface FormData {
   currency: string;
   billingCycle: string;
   category: string;
-  renewalDate: string;
+  renewalDate: Date | undefined;
   isTrial: boolean;
-  trialEndsAt: string;
+  trialEndsAt: Date | undefined;
   source: string;
   notes: string;
 }
@@ -104,9 +105,9 @@ export default function AddSubscriptionForm() {
     currency: 'USD',
     billingCycle: '',
     category: '',
-    renewalDate: '',
+    renewalDate: undefined,
     isTrial: false,
-    trialEndsAt: '',
+    trialEndsAt: undefined,
     source: 'manual',
     notes: '',
   });
@@ -153,9 +154,10 @@ export default function AddSubscriptionForm() {
     if (!formData.renewalDate) {
       newErrors.renewalDate = 'Renewal date is required';
     } else {
-      const selectedDate = new Date(formData.renewalDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(formData.renewalDate);
+      selectedDate.setHours(0, 0, 0, 0);
       if (selectedDate < today) {
         newErrors.renewalDate = 'Renewal date cannot be in the past';
       }
@@ -176,7 +178,7 @@ export default function AddSubscriptionForm() {
   };
 
   // Handle input change
-  const handleChange = (field: keyof FormData, value: string | boolean) => {
+  const handleChange = (field: keyof FormData, value: string | boolean | Date | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field as keyof FormErrors]) {
@@ -212,9 +214,9 @@ export default function AddSubscriptionForm() {
         currency: formData.currency,
         billingCycle: formData.billingCycle as 'monthly' | 'yearly' | 'weekly' | 'custom',
         category: formData.category as 'entertainment' | 'music' | 'education' | 'productivity' | 'finance' | 'health' | 'other',
-        renewalDate: new Date(formData.renewalDate).toISOString(),
+        renewalDate: formData.renewalDate!.toISOString(),
         isTrial: formData.isTrial,
-        trialEndsAt: formData.isTrial && formData.trialEndsAt ? new Date(formData.trialEndsAt).toISOString() : undefined,
+        trialEndsAt: formData.isTrial && formData.trialEndsAt ? formData.trialEndsAt.toISOString() : undefined,
         source: formData.source as 'manual' | 'gmail' | 'imported',
         status: 'active',
       });
@@ -231,12 +233,6 @@ export default function AddSubscriptionForm() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Get minimum date (today)
-  const getMinDate = () => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
   };
 
   return (
@@ -457,12 +453,11 @@ export default function AddSubscriptionForm() {
             <Calendar className="w-4 h-4 text-gray-400" />
             Next Renewal Date
           </Label>
-          <Input
-            id="renewalDate"
-            type="date"
-            min={getMinDate()}
+          <DatePicker
             value={formData.renewalDate}
-            onChange={(e) => handleChange('renewalDate', e.target.value)}
+            onChange={(date) => handleChange('renewalDate', date)}
+            placeholder="Select renewal date"
+            minDate={new Date()}
             error={!!errors.renewalDate}
           />
           {errors.renewalDate && (
@@ -507,15 +502,15 @@ export default function AddSubscriptionForm() {
                   <Label htmlFor="trialEndsAt" required>
                     Trial End Date
                   </Label>
-                  <Input
-                    id="trialEndsAt"
-                    type="date"
-                    min={getMinDate()}
-                    value={formData.trialEndsAt}
-                    onChange={(e) => handleChange('trialEndsAt', e.target.value)}
-                    error={!!errors.trialEndsAt}
-                    className="mt-2"
-                  />
+                  <div className="mt-2">
+                    <DatePicker
+                      value={formData.trialEndsAt}
+                      onChange={(date) => handleChange('trialEndsAt', date)}
+                      placeholder="Select trial end date"
+                      minDate={new Date()}
+                      error={!!errors.trialEndsAt}
+                    />
+                  </div>
                   {errors.trialEndsAt && (
                     <motion.p
                       initial={{ opacity: 0, y: -10 }}
