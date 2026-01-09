@@ -1,28 +1,36 @@
-const Subscription = require("../models/Subscription");
-const { generateUserId } = require("../utils/userIdGenerate");
+const Subscription = require("../models/subscription");
 ///////////-1)--create subscription---///////////
 
 const createSubscription = async (req, res) => {
   try {
-    const { userId, name, amount, billingCycle, renewalDate, isTrial, source } =
-      req.body;
+    const {
+      name,
+      amount,
+      billingCycle,
+      renewalDate,
+      isTrial,
+      source,
+      category,
+      notes,
+    } = req.body;
     // const userId = generateUserId();
-    if (!userId || !name || !amount || !billingCycle || !renewalDate) {
+    if (!name || !amount || !billingCycle || !renewalDate || !category) {
       return res.status(400).json({
         success: false,
         message:
-          "Missing required fields: name, amount, billingCycle, renewalDate",
+          "Missing required fields: name, amount, billingCycle, renewalDate, category",
       });
     }
 
     const subscription = new Subscription({
-      userId,
       name,
       amount,
       billingCycle,
       renewalDate: new Date(renewalDate),
       isTrial: isTrial || false,
       source: source || "manual",
+      category,
+      notes: notes || "",
     });
 
     await subscription.save();

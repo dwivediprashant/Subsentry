@@ -6,6 +6,8 @@ import SubscriptionCard from "../components/SubscriptionCard";
 import FilterControls from "../components/FilterControls";
 import EmptyState from "../components/EmptyState";
 import Loader from "../utils/Loader";
+import Modal from "../components/Modal";
+import SubscriptionForm from "../components/SubscriptionForm";
 
 export interface SubscriptionData {
   identifier: string;
@@ -24,7 +26,7 @@ export interface SubscriptionData {
 export interface FilterConfiguration {
   statusFilter: string;
   cycleFilter: string;
-  sortBy: "renewalDate" | "cost";
+  sortBy: "renewalDate" | "cost" | "serviceCategory";
   sortOrder: "asc" | "desc";
 }
 
@@ -39,6 +41,7 @@ export default function Subscriptions() {
     sortBy: "renewalDate",
     sortOrder: "asc",
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchSubscriptionData();
@@ -59,6 +62,11 @@ export default function Subscriptions() {
     } finally {
       setLoadingState(false);
     }
+  };
+
+  const handleFormSuccess = () => {
+    setIsModalOpen(false);
+    fetchSubscriptionData(); // Refresh the list
   };
 
   const getFilteredAndSortedSubscriptions = () => {
@@ -128,12 +136,35 @@ export default function Subscriptions() {
   return (
     <AppLayout activePage="Subscriptions">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#FFFFFF] mb-2">
-          Subscription Management
-        </h1>
-        <p className="text-[#B3B3B3]">
-          Monitor and manage all your active subscriptions
-        </p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-[#FFFFFF] mb-2">
+              Subscription Management
+            </h1>
+            <p className="text-[#B3B3B3]">
+              Monitor and manage all your active subscriptions
+            </p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-6 py-3 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] transition-colors flex items-center"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Add Subscription
+          </button>
+        </div>
       </div>
 
       <FilterControls
@@ -158,6 +189,15 @@ export default function Subscriptions() {
           ))}
         </div>
       )}
+
+      {/* Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Add New Subscription"
+      >
+        <SubscriptionForm onSuccess={handleFormSuccess} />
+      </Modal>
     </AppLayout>
   );
 }

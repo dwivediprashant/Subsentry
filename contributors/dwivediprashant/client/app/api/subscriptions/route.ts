@@ -55,6 +55,66 @@ export async function GET() {
   }
 }
 
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+
+    // Validate required fields
+    const requiredFields = [
+      "name",
+      "amount",
+      "billingCycle",
+      "renewalDate",
+      "category",
+    ];
+    const missingFields = requiredFields.filter((field) => !body[field]);
+
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Missing required fields: ${missingFields.join(", ")}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Forward the request to your backend server
+    const response = await fetch("http://localhost:5000/api/subscriptions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(result, {
+        status: response.status,
+      });
+    }
+
+    // Return the backend response
+    return NextResponse.json(result, {
+      status: 201,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("API Error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Failed to create subscription",
+      },
+      { status: 500 }
+    );
+  }
+}
+
 // Helper functions to map backend data to frontend format
 function getCategoryFromName(serviceName: string): string {
   const categories: { [key: string]: string } = {
