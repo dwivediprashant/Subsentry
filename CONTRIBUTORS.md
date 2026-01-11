@@ -88,7 +88,7 @@ Copy-paste this row at the **end of the table** and fill your details:
 | <img src="https://github.com/rudraminaa.png?size=80" width="48" alt="https://avatars.githubusercontent.com/u/222640211?v=4">|**Rudra Mina**| Fresher at IIIT Allahabad| [@rudraminaa](https://github.com/rudraminaa) |
 | <img src="https://github.com/Dharshin1.png?size=80" width="48" alt="Dharshin1 avatar"> | **Dharshini** | Computer science student interested in backend development and open-source contributions. | [@Dharshin1](https://github.com/Dharshin1) |
 | <img src="https://github.com/IshanChad.png?size=80" width="48" alt="IshanChad avatar"> | **Ishan Chadha** | Computer science student interested in backend development and open-source contributions. | [@IshanChad](https://github.com/IshanChad) |
-| <img src="https://github.com/Siddharthjagtap336.png?size=80" width="48" alt="Siddharthjagtap336 avatar"> | **Siddharth Jagtap** | A CSE student interested in backend development and open-source contributions. | [@Siddharthjagtap336](https://github.com/Siddharthjagtap336) |
+| <img src="https://github.com/Siddharthjagtap346.png?size=80" width="48" alt="Siddharthjagtap336 avatar"> | **Siddharth Jagtap** | A CSE student interested in backend development and open-source contributions. | [@Siddharthjagtap336](https://github.com/Siddharthjagtap346) |
 | <img src="https://github.com/AakritiSingh05.png?size=80" width="48" alt="AakritiSingh05 avatar"> | **Aakriti Singh** | CSE student and frontend developer who loves crafting bold, eye-catching, and interactive websites. | [@AakritiSingh05](https://github.com/AakritiSingh05) |
 
 ---
