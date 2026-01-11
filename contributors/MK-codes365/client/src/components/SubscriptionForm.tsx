@@ -1,9 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function SubscriptionForm() {
-  const [formData, setFormData] = useState({
+interface SubscriptionData {
+  _id?: string;
+  name: string;
+  amount: string | number;
+  billingCycle: string;
+  renewalDate: string;
+  category: string;
+  isTrial: boolean;
+  source: string;
+  notes: string;
+}
+
+interface SubscriptionFormProps {
+  initialData?: SubscriptionData;
+  isEditing?: boolean;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export default function SubscriptionForm({
+  initialData,
+  isEditing = false,
+  onSuccess,
+  onCancel,
+}: SubscriptionFormProps) {
+  const [formData, setFormData] = useState<SubscriptionData>({
     name: "",
     amount: "",
     billingCycle: "monthly",
@@ -20,6 +44,19 @@ export default function SubscriptionForm() {
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
+  useEffect(() => {
+    if (initialData) {
+      // Ensure amount is string for input, and handle potential missing fields
+      setFormData({
+        ...initialData,
+        amount: initialData.amount.toString(),
+        renewalDate: initialData.renewalDate
+          ? new Date(initialData.renewalDate).toISOString().split("T")[0]
+          : "",
+      });
+    }
+  }, [initialData]);
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -34,7 +71,6 @@ export default function SubscriptionForm() {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
-    // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -61,18 +97,22 @@ export default function SubscriptionForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validate()) return;
 
     setStatus("loading");
     setErrorMessage("");
 
     try {
-      const response = await fetch("/api/subscriptions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const url =
+        isEditing && initialData?._id
+          ? `/api/subscriptions/${initialData._id}`
+          : "/api/subscriptions";
+
+      const method = isEditing ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method: method,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           amount: Number(formData.amount),
@@ -80,23 +120,30 @@ export default function SubscriptionForm() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add subscription");
+        throw new Error(
+          `Failed to ${isEditing ? "update" : "add"} subscription`
+        );
       }
 
       setStatus("success");
-      setFormData({
-        name: "",
-        amount: "",
-        billingCycle: "monthly",
-        renewalDate: "",
-        category: "Entertainment",
-        isTrial: false,
-        source: "",
-        notes: "",
-      });
 
-      // Reset success message after 3 seconds
-      setTimeout(() => setStatus("idle"), 3000);
+      if (!isEditing) {
+        setFormData({
+          name: "",
+          amount: "",
+          billingCycle: "monthly",
+          renewalDate: "",
+          category: "Entertainment",
+          isTrial: false,
+          source: "",
+          notes: "",
+        });
+      }
+
+      setTimeout(() => {
+        setStatus("idle");
+        if (onSuccess) onSuccess();
+      }, 1500);
     } catch (error) {
       console.error(error);
       setStatus("error");
@@ -105,14 +152,38 @@ export default function SubscriptionForm() {
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
-          Add New Subscription
-        </h2>
-        <p className="text-gray-500 text-sm mt-1">
-          Track your recurring expenses efficiently.
-        </p>
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">
+            {isEditing ? "Edit Subscription" : "Add New Subscription"}
+          </h2>
+          <p className="text-gray-500 text-sm mt-1">
+            {isEditing
+              ? "Update your subscription details below."
+              : "Track your recurring expenses efficiently."}
+          </p>
+        </div>
+        {isEditing && onCancel && (
+          <button
+            onClick={onCancel}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        )}
       </div>
 
       {status === "success" && (
@@ -130,7 +201,7 @@ export default function SubscriptionForm() {
               d="M5 13l4 4L19 7"
             />
           </svg>
-          Subscription added successfully!
+          {isEditing ? "Updated successfully!" : "Added successfully!"}
         </div>
       )}
 
@@ -140,7 +211,7 @@ export default function SubscriptionForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -151,17 +222,17 @@ export default function SubscriptionForm() {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            placeholder="e.g. Netflix, Spotify"
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
               errors.name ? "border-red-500 bg-red-50" : "border-gray-300"
             }`}
+            placeholder="e.g. Netflix"
           />
           {errors.name && (
             <p className="text-red-500 text-xs mt-1">{errors.name}</p>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-2 gap-4">
           {/* Amount */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -174,12 +245,11 @@ export default function SubscriptionForm() {
                 name="amount"
                 value={formData.amount}
                 onChange={handleChange}
-                placeholder="0.00"
-                step="0.01"
-                min="0"
-                className={`w-full pl-7 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                className={`w-full pl-7 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
                   errors.amount ? "border-red-500 bg-red-50" : "border-gray-300"
                 }`}
+                placeholder="0.00"
+                step="0.01"
               />
             </div>
             {errors.amount && (
@@ -190,34 +260,33 @@ export default function SubscriptionForm() {
           {/* Billing Cycle */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Billing Cycle
+              Cycle
             </label>
             <select
               name="billingCycle"
               value={formData.billingCycle}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
             >
               <option value="monthly">Monthly</option>
               <option value="yearly">Yearly</option>
               <option value="weekly">Weekly</option>
-              <option value="daily">Daily</option>
             </select>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-2 gap-4">
           {/* Renewal Date */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Renewal Date *
+              Renewal *
             </label>
             <input
               type="date"
               name="renewalDate"
               value={formData.renewalDate}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
                 errors.renewalDate
                   ? "border-red-500 bg-red-50"
                   : "border-gray-300"
@@ -237,7 +306,7 @@ export default function SubscriptionForm() {
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
             >
               <option value="Entertainment">Entertainment</option>
               <option value="Tools">Tools</option>
@@ -258,32 +327,17 @@ export default function SubscriptionForm() {
             name="source"
             value={formData.source}
             onChange={handleChange}
-            placeholder="e.g. Credit Card (#### 1234), PayPal"
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
               errors.source ? "border-red-500 bg-red-50" : "border-gray-300"
             }`}
+            placeholder="e.g. Visa 4242"
           />
           {errors.source && (
             <p className="text-red-500 text-xs mt-1">{errors.source}</p>
           )}
         </div>
 
-        {/* Notes */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Notes (Optional)
-          </label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-            rows={3}
-            placeholder="Add any extra details here..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
-          />
-        </div>
-
-        {/* Trial Toggle */}
+        {/* Trial */}
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -291,49 +345,38 @@ export default function SubscriptionForm() {
             id="isTrial"
             checked={formData.isTrial}
             onChange={handleChange}
-            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
           <label
             htmlFor="isTrial"
-            className="ml-2 block text-sm text-gray-700 select-none cursor-pointer"
+            className="ml-2 text-sm text-gray-700 cursor-pointer"
           >
-            It is a Free Trial?
+            Free Trial?
           </label>
         </div>
 
-        <button
-          type="submit"
-          disabled={status === "loading"}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex justify-center items-center shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          {status === "loading" ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Saving...
-            </>
-          ) : (
-            "Add Subscription"
+        <div className="flex gap-3 pt-2">
+          {isEditing && onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+            >
+              Cancel
+            </button>
           )}
-        </button>
+          <button
+            type="submit"
+            disabled={status === "loading"}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex justify-center items-center shadow-sm disabled:opacity-70"
+          >
+            {status === "loading"
+              ? "Saving..."
+              : isEditing
+              ? "Update Subscription"
+              : "Add Subscription"}
+          </button>
+        </div>
       </form>
     </div>
   );
