@@ -95,6 +95,9 @@ Copy-paste this row at the **end of the table** and fill your details:
   **About:** Computer science student interested in backend development and open-source contributions.
 
 
+- **Name:** Siddharth Jagtap
+  **GitHub:** https://github.com/Siddharthjagtap346  
+  **About:** A CSE student interested in backend development and open-source contributions.
 
 ---
 
