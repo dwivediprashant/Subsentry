@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { categoryValues, sourceValues, statusValues } from "../constants/subscription";
-import { billingCycle } from "../constants/billing";
+import { categoryValues, sourceValues, statusValues } from "../constants/subscription.js";
+import { billingCycle } from "../constants/billing.js";
 
 const subscriptionSchema = new mongoose.Schema({
     userId: {
