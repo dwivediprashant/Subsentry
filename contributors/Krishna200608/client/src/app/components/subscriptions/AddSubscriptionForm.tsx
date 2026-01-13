@@ -5,7 +5,6 @@ import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
 import {
   CreditCard,
   Calendar,
@@ -223,10 +222,6 @@ export default function AddSubscriptionForm() {
       });
 
       setSubmitStatus('success');
-      
-      toast.success('Subscription created', {
-        description: `${formData.name} has been added successfully.`,
-      });
 
       // Redirect after success
       setTimeout(() => {

@@ -5,7 +5,6 @@ import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import { Plus, Loader2, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
 import DashboardLayout from '../components/DashboardLayout';
 import {
   SubscriptionCard,
@@ -14,13 +13,13 @@ import {
   ViewToggle,
   EmptyState,
   QuickStats,
-  EditSubscriptionModal,
-  DeleteConfirmDialog,
   FilterStatus,
   FilterBillingCycle,
   FilterCategory,
   SortField,
   SortOrder,
+  UpdateSubscriptionModal,
+  RemoveSubscriptionDialog,
 } from '../components/subscriptions';
 import { Subscription, getSubscriptions, updateSubscription, deleteSubscription } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -64,9 +63,6 @@ export default function SubscriptionsPage() {
         setSubscriptions(data.subscriptions || []);
       } catch (err) {
         setError('Failed to load subscriptions. Make sure the server is running.');
-        toast.error('Failed to load subscriptions', {
-          description: 'Make sure the server is running.',
-        });
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -140,49 +136,32 @@ export default function SubscriptionsPage() {
       setSubscriptions(data.subscriptions || []);
     } catch (err) {
       setError('Failed to refresh subscriptions');
-      toast.error('Failed to refresh', {
-        description: 'Could not refresh subscriptions.',
-      });
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle edit subscription
   const handleEditSubscription = async (id: string, data: Partial<Subscription>) => {
     const token = await getToken();
-    if (!token) throw new Error('Authentication required');
-    
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
     const result = await updateSubscription(token, id, data);
-    
-    // Update local state immediately
-    setSubscriptions(prev => 
-      prev.map(sub => sub._id === id ? result.subscription : sub)
+    setSubscriptions((prev) =>
+      prev.map((sub) => (sub._id === id ? result.subscription : sub))
     );
-    
-    toast.success('Subscription updated', {
-      description: `${result.subscription.name} has been updated successfully.`,
-    });
   };
 
-  // Handle delete subscription
   const handleDeleteSubscription = async (id: string) => {
     const token = await getToken();
-    if (!token) throw new Error('Authentication required');
-    
-    // Get subscription name before deleting
-    const subscription = subscriptions.find(s => s._id === id);
-    const subName = subscription?.name || 'Subscription';
-    
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
     await deleteSubscription(token, id);
-    
-    // Remove from local state immediately
-    setSubscriptions(prev => prev.filter(sub => sub._id !== id));
-    
-    toast.success('Subscription deleted', {
-      description: `${subName} has been permanently removed.`,
-    });
+    setSubscriptions((prev) => prev.filter((sub) => sub._id !== id));
   };
 
   return (
@@ -293,8 +272,8 @@ export default function SubscriptionsPage() {
                   subscription={subscription}
                   view={view}
                   index={index}
-                  onEdit={setEditingSubscription}
-                  onDelete={setDeletingSubscription}
+                  onEdit={() => setEditingSubscription(subscription)}
+                  onDelete={() => setDeletingSubscription(subscription)}
                 />
               ))}
             </AnimatePresence>
@@ -302,20 +281,20 @@ export default function SubscriptionsPage() {
         </>
       )}
 
-      {/* Edit Modal */}
-      <EditSubscriptionModal
-        subscription={editingSubscription}
-        isOpen={!!editingSubscription}
-        onClose={() => setEditingSubscription(null)}
-        onSave={handleEditSubscription}
+      <UpdateSubscriptionModal
+        subscriptionData={editingSubscription}
+        visible={!!editingSubscription}
+        onDismiss={() => setEditingSubscription(null)}
+        onUpdate={handleEditSubscription}
       />
 
-      {/* Delete Confirmation Dialog */}
-      <DeleteConfirmDialog
-        subscription={deletingSubscription}
-        isOpen={!!deletingSubscription}
-        onClose={() => setDeletingSubscription(null)}
-        onConfirm={handleDeleteSubscription}
+      <RemoveSubscriptionDialog
+        subscriptionData={deletingSubscription}
+        open={!!deletingSubscription}
+        onOpenChange={(open) => {
+          if (!open) setDeletingSubscription(null);
+        }}
+        onRemove={handleDeleteSubscription}
       />
     </DashboardLayout>
   );

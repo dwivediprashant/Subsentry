@@ -46,7 +46,13 @@ interface SubscriptionCardProps {
   onDelete?: (subscription: Subscription) => void;
 }
 
-export default function SubscriptionCard({ subscription, view = 'grid', index = 0, onEdit, onDelete }: SubscriptionCardProps) {
+export default function SubscriptionCard({
+  subscription,
+  view = 'grid',
+  index = 0,
+  onEdit,
+  onDelete,
+}: SubscriptionCardProps) {
   const daysUntil = getDaysUntilRenewal(subscription.renewalDate);
   const isUrgent = isUrgentRenewal(subscription.renewalDate);
   const categoryColors = getCategoryColor(subscription.category);
@@ -178,8 +184,11 @@ export default function SubscriptionCard({ subscription, view = 'grid', index = 
                 <ExternalLink className="w-4 h-4" /> Visit Site
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="gap-2 text-red-400 focus:text-red-400" onClick={() => onDelete?.(subscription)}>
-                <Trash2 className="w-4 h-4" /> Delete
+              <DropdownMenuItem
+                className="gap-2 text-red-400 focus:text-red-400"
+                onClick={() => onDelete?.(subscription)}
+              >
+                <Trash2 className="w-4 h-4" /> Cancel
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -256,8 +265,11 @@ export default function SubscriptionCard({ subscription, view = 'grid', index = 
                   <ExternalLink className="w-4 h-4" /> Visit Site
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 text-red-400 focus:text-red-400" onClick={() => onDelete?.(subscription)}>
-                  <Trash2 className="w-4 h-4" /> Delete
+                <DropdownMenuItem
+                  className="gap-2 text-red-400 focus:text-red-400"
+                  onClick={() => onDelete?.(subscription)}
+                >
+                  <Trash2 className="w-4 h-4" /> Cancel
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
