@@ -1,5 +1,6 @@
 import { Subscription } from '../models/Subscription.js';
 import { validateCreateSubscription } from '../validators/subscription.validator.js';
+import { calculateMonthlySpend } from '../services/subscriptionMetrics.js';
 
 export const createSubscription = async (req, res) => {
   try {
@@ -45,7 +46,14 @@ export const getUserSubscriptions = async (req, res) => {
       .sort({ renewalDate: 1 })
       .select('-__v');
 
-    return res.status(200).json({ subscriptions });
+    const monthlySpend = calculateMonthlySpend(subscriptions);
+
+    return res.status(200).json({
+      data: subscriptions,
+      meta: {
+        monthlySpend,
+      },
+    });
   } catch (error) {
     return res.status(500).json({
       message: 'Failed to fetch subscriptions',

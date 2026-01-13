@@ -27,10 +27,11 @@ Week 4 is about turning raw subscription data into **meaningful insight**. The U
 | ✅ Issue | Focus Area | Contributors (PRs) |
 |---:|---|---|
 | **11** | Auth Landing Page (Competitive) | Krishna200608 (**#200**) |
+| **12** | Monthly Spend Calculation | Krishna200608 (**#201**) |
 
 ### 📝 Other Submissions (Pending/Not Merged)
 - Issue 12 (Monthly Spend): Chithra582 (**#198**) — pending review
-- Issue 13 (Yearly Spend): Chithra582 (**#199**) — pending review
+- Issue 13 (Yearly Spend): Chithra582 (**#199**), Siddharthjagtap346 (**#202**) — pending review
 
 ## 📌 Structure
 

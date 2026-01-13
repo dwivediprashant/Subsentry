@@ -18,7 +18,11 @@ export interface Subscription {
 }
 
 export interface SubscriptionResponse {
-  subscriptions: Subscription[];
+  data: Subscription[];
+  meta?: {
+    monthlySpend?: number;
+    yearlySpend?: number;
+  };
 }
 
 export async function getSubscriptions(token: string): Promise<SubscriptionResponse> {
@@ -34,7 +38,16 @@ export async function getSubscriptions(token: string): Promise<SubscriptionRespo
     throw new Error('Failed to fetch subscriptions');
   }
 
-  return response.json();
+  const payload = await response.json();
+
+  if (Array.isArray(payload?.subscriptions)) {
+    return {
+      data: payload.subscriptions,
+      meta: payload.meta ?? {},
+    };
+  }
+
+  return payload;
 }
 
 export async function createSubscription(
