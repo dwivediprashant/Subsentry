@@ -1,5 +1,5 @@
 const Subscription = require('../../models/Subscription');
-const { calculateMonthlySpend } = require('../services/subscriptionMetrics');
+const { calculateMonthlySpend, calculateYearlySpend } = require('../services/subscriptionMetrics');
 
 // GET all subs + monthly summary
 const getSubscriptions = async (req, res) => {
@@ -7,10 +7,11 @@ const getSubscriptions = async (req, res) => {
     // TODO: Filter by logged in user once auth is fully wired
     const subscriptions = await Subscription.find();
     const monthlySpend = calculateMonthlySpend(subscriptions);
+    const yearlySpend = calculateYearlySpend(subscriptions);
 
     res.json({
       data: subscriptions,
-      meta: { monthlySpend }
+      meta: { monthlySpend, yearlySpend }
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch subscriptions' });

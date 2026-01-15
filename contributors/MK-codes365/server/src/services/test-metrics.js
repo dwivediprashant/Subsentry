@@ -1,29 +1,32 @@
-const { calculateMonthlySpend } = require('./subscriptionMetrics');
+const { calculateMonthlySpend, calculateYearlySpend } = require('./subscriptionMetrics');
 
-const testSubscriptions = [
+const testSubs = [
   { name: 'Netflix', price: 499, billingCycle: 'monthly', active: true },
   { name: 'Adobe', price: 12000, billingCycle: 'yearly', active: true },
-  { name: 'Hosting', price: 10, billingCycle: 'monthly', active: false }, // Inactive, should be ignored
-  { name: 'Gym', price: 50, billingCycle: 'weekly', active: true }, // Weekly: (50 * 52) / 12 = 216.67
-  { name: 'Invalid', price: NaN, billingCycle: 'monthly', active: true }, // Invalid price, should be ignored
+  { name: 'Gym', price: 50, billingCycle: 'weekly', active: true },
+  { name: 'Inactive', price: 100, billingCycle: 'monthly', active: false },
+  { name: 'Invalid', price: NaN, billingCycle: 'monthly', active: true },
 ];
 
-console.log('--- SubSentry Metrics Test ---');
-const monthlySpend = calculateMonthlySpend(testSubscriptions);
+console.log('--- SubSentry Metrics Test (Monthly & Yearly) ---');
 
-console.log('Test Data:');
-testSubscriptions.forEach(sub => {
-  console.log(`- ${sub.name}: ${sub.price} (${sub.billingCycle}) [Active: ${sub.active}]`);
-});
+const monthly = calculateMonthlySpend(testSubs);
+const yearly = calculateYearlySpend(testSubs);
 
-console.log('\nExpected Calculation:');
-console.log('499 (Netflix) + (12000 / 12) (Adobe) + (50 * 52 / 12) (Gym) = 499 + 1000 + 216.67 = 1715.67');
+console.log(`Monthly: ${monthly}`);
+console.log(`Yearly: ${yearly}`);
 
-console.log('\nResult:');
-console.log(`Computed Monthly Spend: ${monthlySpend}`);
+// Math check:
+// Netflix: 499/mo -> 5988/yr
+// Adobe: 1000/mo -> 12000/yr
+// Gym: 216.666.../mo -> 2600/yr
+// Total Monthly: ~1715.67
+// Total Yearly: 5988 + 12000 + 2600 = 20588
 
-if (monthlySpend === 1715.67) {
-  console.log('✅ TEST PASSED');
+if (monthly === 1715.67 && yearly === 20588) {
+  console.log('✅ ALL TESTS PASSED');
 } else {
   console.log('❌ TEST FAILED');
+  if (monthly !== 1715.67) console.log(`Monthly mismatch: expected 1715.67, got ${monthly}`);
+  if (yearly !== 20588) console.log(`Yearly mismatch: expected 20588, got ${yearly}`);
 }
