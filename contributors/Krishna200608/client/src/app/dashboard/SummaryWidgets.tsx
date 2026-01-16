@@ -43,6 +43,28 @@ const fetchMetrics = async (token: string | null | undefined): Promise<Metrics> 
   return { monthlySpend, yearlySpend, activeCount, trialCount };
 };
 
+// CountUp hook for animation
+function useCountUp(target: number, duration = 1000) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    let startTime: number | null = null;
+    function animate(ts: number) {
+      if (!startTime) startTime = ts;
+      const progress = Math.min((ts - startTime) / duration, 1);
+      setValue(Math.floor(start + (target - start) * progress));
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setValue(target);
+      }
+    }
+    requestAnimationFrame(animate);
+    // Reset on target change
+    return () => setValue(target);
+  }, [target, duration]);
+  return value;
+}
 
 const SummaryWidgets = () => {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
@@ -55,20 +77,16 @@ const SummaryWidgets = () => {
     })();
   }, [getToken]);
 
-  if (!metrics) {
-    return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i} className="flex-1 h-24 animate-pulse" />
-        ))}
-      </div>
-    );
-  }
+  // Always call hooks, use 0 if metrics not loaded yet
+  const animatedMonthly = useCountUp(metrics?.monthlySpend ?? 0);
+  const animatedYearly = useCountUp(metrics?.yearlySpend ?? 0);
+  const animatedActive = useCountUp(metrics?.activeCount ?? 0);
+  const animatedTrial = useCountUp(metrics?.trialCount ?? 0);
 
   const widgetData = [
     {
       label: "Monthly Spend",
-      value: `₹${metrics.monthlySpend.toLocaleString()}`,
+      value: metrics ? `₹${animatedMonthly.toLocaleString()}` : null,
       icon: <TrendingUp className="w-6 h-6 text-blue-400" />,
       highlight: true,
       bg: "bg-gradient-to-br from-[#101c2c] to-[#0a0f1a]",
@@ -76,7 +94,7 @@ const SummaryWidgets = () => {
     },
     {
       label: "Yearly Spend",
-      value: `₹${metrics.yearlySpend.toLocaleString()}`,
+      value: metrics ? `₹${animatedYearly.toLocaleString()}` : null,
       icon: <Calendar className="w-6 h-6 text-purple-400" />,
       highlight: false,
       bg: "bg-gradient-to-br from-[#1a102c] to-[#120a1a]",
@@ -84,7 +102,7 @@ const SummaryWidgets = () => {
     },
     {
       label: "Active Subscriptions",
-      value: metrics.activeCount,
+      value: metrics ? animatedActive : null,
       icon: <CreditCard className="w-6 h-6 text-green-400" />,
       highlight: false,
       bg: "bg-gradient-to-br from-[#102c1a] to-[#0a1a12]",
@@ -92,7 +110,7 @@ const SummaryWidgets = () => {
     },
     {
       label: "Trials Count",
-      value: metrics.trialCount,
+      value: metrics ? animatedTrial : null,
       icon: <Zap className="w-6 h-6 text-yellow-400" />,
       highlight: false,
       bg: "bg-gradient-to-br from-[#2c2410] to-[#1a150a]",
@@ -115,7 +133,11 @@ const SummaryWidgets = () => {
           </div>
           <div className="flex flex-col items-center z-10">
             <span className={`text-xs font-semibold tracking-wide uppercase mb-1 ${w.highlight ? "text-blue-100" : "text-gray-300"}`}>{w.label}</span>
-            <span className={`text-3xl font-extrabold mt-1 ${w.highlight ? "text-blue-100" : "text-white"}`}>{w.value}</span>
+            {w.value !== null ? (
+              <span className={`text-3xl font-extrabold mt-1 ${w.highlight ? "text-blue-100" : "text-white"}`}>{w.value}</span>
+            ) : (
+              <span className="w-20 h-8 bg-gray-800/40 rounded animate-pulse mt-1" />
+            )}
           </div>
         </Card>
       ))}
