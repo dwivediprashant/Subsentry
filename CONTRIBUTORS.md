@@ -92,6 +92,9 @@ Copy-paste this row at the **end of the table** and fill your details:
 | <img src="https://github.com/AakritiSingh05.png?size=80" width="48" alt="AakritiSingh05 avatar"> | **Aakriti Singh** | CSE student and frontend developer who loves crafting bold, eye-catching, and interactive websites. | [@AakritiSingh05](https://github.com/AakritiSingh05) |
 | <img src="https://github.com/deepali-kumari-iitp.png?size=80" width="48" alt="deepali-kumari-iitp avatar"> | **Deepali Kumari** | B.Sc CS & Data Analytics student at IIT Patna, interested in web development and open source. | [@deepali-kumari-iitp](https://github.com/deepali-kumari-iitp) |
 **Vrindaa Talwar** | BTech in Artificial Intellgence and Data Science, interested in web development, devops and open source. | [@vrindaatalwar](https://github.com/vrindaatalwar) |
+| <img src="https://github.com/vibhutomer.png?size=80" width="48" alt="vibhutomer avatar"> | **Vibhu Tomer** | B.Tech Student at MNNIT,AIML,Node.js developer,Flutter Developer | [@vibhutomer](https://github.com/vibhutomer) |
+
+
 ---
 
 ## 🧩 Notes
