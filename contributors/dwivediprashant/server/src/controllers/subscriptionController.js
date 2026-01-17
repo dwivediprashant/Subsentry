@@ -1,5 +1,6 @@
 const Subscription = require("../models/subscription");
 const { calculateMonthlySpend } = require("../services/subscriptionMetrics");
+const { calculateYearlySpend } = require("../services/subscriptionMetrics");
 ///////////-1)--create subscription---///////////
 
 const createSubscription = async (req, res) => {
@@ -58,6 +59,7 @@ const getSubscriptions = async (req, res) => {
     const subscriptions = await Subscription.find({}).sort({ createdAt: -1 });
 
     const monthlySpend = calculateMonthlySpend(subscriptions);
+    const yearlySpend = calculateYearlySpend(subscriptions);
 
     res.status(200).json({
       success: true,
@@ -66,6 +68,7 @@ const getSubscriptions = async (req, res) => {
       count: subscriptions.length,
       meta: {
         monthlySpend,
+        yearlySpend,
       },
     });
   } catch (error) {
