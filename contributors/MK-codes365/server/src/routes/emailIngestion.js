@@ -1,40 +1,51 @@
 const express = require("express");
 const router = express.Router();
+const { extractAmount, extractBilling, extractName } = require("../utils/parser");
 
-// Mock email scanning endpoint
+// Mock emails with sample data
+const MOCK_EMAILS = [
+  {
+    subject: "Your Netflix subscription receipt",
+    snippet: "Monthly Premium plan: $15.99. Thanks for watching!",
+    date: new Date().toISOString()
+  },
+  {
+    subject: "Spotify Premium - Renewal Confirmation",
+    snippet: "Your monthly subscription has been renewed for 10.99 USD.",
+    date: new Date().toISOString()
+  },
+  {
+    subject: "Adobe Creative Cloud Payment",
+    snippet: "Success! We've charged $52.99 for your annual subscription.",
+    date: new Date().toISOString()
+  }
+];
+
+// Email scanning endpoint
 router.post("/scan", async (req, res) => {
   try {
-    // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // Simulate network delay
+    await new Promise(r => setTimeout(r, 1500));
 
-    // Simulate random success/failure for testing
-    const shouldFail = Math.random() < 0.2;
-
-    if (shouldFail) {
-      return res.status(400).json({
-        success: false,
-        message: "Gmail connection not found. Please connect your account first.",
-      });
-    }
-
-    // Mock found subscriptions
-    const mockSubscriptions = [
-      "Netflix",
-      "Spotify Premium",
-      "Adobe Creative Cloud",
-    ];
+    const parsedData = MOCK_EMAILS.map(email => ({
+      name: extractName(email.subject, email.snippet),
+      amount: extractAmount(email.snippet) || extractAmount(email.subject),
+      billing: extractBilling(email.subject + " " + email.snippet),
+      date: email.date
+    }));
 
     res.json({
       success: true,
-      found: mockSubscriptions.length,
-      subscriptions: mockSubscriptions,
+      found: parsedData.length,
+      subscriptions: parsedData,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Internal server error during email scan",
+      message: "Internal server error during scan",
     });
   }
 });
 
 module.exports = router;
+

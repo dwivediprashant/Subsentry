@@ -2,9 +2,16 @@
 
 import { useState } from "react";
 
+interface Subscription {
+  name: string;
+  amount: string | null;
+  billing: string;
+  date: string;
+}
+
 interface ScanResult {
   found: number;
-  subscriptions: string[];
+  subscriptions: Subscription[];
 }
 
 export default function EmailIngestionPage() {
@@ -95,11 +102,28 @@ export default function EmailIngestionPage() {
                     {result.found !== 1 ? "s" : ""}
                   </p>
                   {result.subscriptions.length > 0 && (
-                    <ul className="mt-2 text-sm text-green-700 space-y-1">
+                    <div className="mt-4 space-y-2">
                       {result.subscriptions.map((sub, index) => (
-                        <li key={index}>• {sub}</li>
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-3 bg-white border border-gray-100 rounded-lg shadow-sm"
+                        >
+                          <div>
+                            <p className="font-semibold text-gray-900">
+                              {sub.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {sub.billing}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-gray-900">
+                              {sub.amount || "N/A"}
+                            </p>
+                          </div>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   )}
                 </div>
               </div>
