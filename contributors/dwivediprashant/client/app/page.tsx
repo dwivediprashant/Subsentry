@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import AppLayout from "./components/AppLayout";
-import { SubscriptionData } from "./subscriptions/page";
-import Modal from "./components/Modal";
-import SubscriptionForm from "./components/SubscriptionForm";
-import EditSubscriptionForm from "./components/EditSubscriptionForm";
-import DeleteConfirmationDialog from "./components/DeleteConfirmationDialog";
+import { useEffect, useState } from 'react';
+import AppLayout from './components/AppLayout';
+import DeleteConfirmationDialog from './components/DeleteConfirmationDialog';
+import EditSubscriptionForm from './components/EditSubscriptionForm';
+import Modal from './components/Modal';
+import SubscriptionForm from './components/SubscriptionForm';
+import { SubscriptionData } from './subscriptions/page';
 
 export default function Dashboard() {
   const [subscriptionList, setSubscriptionList] = useState<SubscriptionData[]>(
-    [],
+    []
   );
   const [loadingState, setLoadingState] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,11 +29,11 @@ export default function Dashboard() {
   const fetchSubscriptionData = async () => {
     try {
       setLoadingState(true);
-      const response = await fetch("/api/subscriptions");
+      const response = await fetch('/api/subscriptions');
       const data = await response.json();
       setSubscriptionList(data);
     } catch (error) {
-      console.error("Failed to fetch subscriptions:", error);
+      console.error('Failed to fetch subscriptions:', error);
     } finally {
       setLoadingState(false);
     }
@@ -41,34 +41,34 @@ export default function Dashboard() {
 
   const calculateStats = () => {
     const activeSubscriptions = subscriptionList.filter(
-      (sub) => sub.serviceStatus === "active",
+      (sub) => sub.serviceStatus === 'active'
     );
     const trialSubscriptions = subscriptionList.filter(
-      (sub) => sub.serviceStatus === "trial",
+      (sub) => sub.serviceStatus === 'trial'
     );
     const monthlySubscriptions = activeSubscriptions.filter(
-      (sub) => sub.billingInterval === "monthly",
+      (sub) => sub.billingInterval === 'monthly'
     );
     const monthlyTotal = monthlySubscriptions.reduce(
       (sum, sub) => sum + sub.cost,
-      0,
+      0
     );
 
     const spendTotals = activeSubscriptions.reduce(
       (totals, sub) => {
-        if (sub.billingInterval === "monthly") {
+        if (sub.billingInterval === 'monthly') {
           totals.monthlySpend += sub.cost;
           totals.yearlySpend += sub.cost * 12;
-        } else if (sub.billingInterval === "yearly") {
+        } else if (sub.billingInterval === 'yearly') {
           totals.yearlySpend += sub.cost;
-        } else if (sub.billingInterval === "weekly") {
+        } else if (sub.billingInterval === 'weekly') {
           totals.monthlySpend += sub.cost * 4;
           totals.yearlySpend += sub.cost * 52;
         }
 
         return totals;
       },
-      { monthlySpend: 0, yearlySpend: 0 },
+      { monthlySpend: 0, yearlySpend: 0 }
     );
 
     return {
@@ -112,12 +112,12 @@ export default function Dashboard() {
       const response = await fetch(
         `/api/subscriptions/${deletingSubscription._id}`,
         {
-          method: "DELETE",
-        },
+          method: 'DELETE',
+        }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete subscription");
+        throw new Error('Failed to delete subscription');
       }
 
       setIsDeleteDialogOpen(false);
@@ -130,7 +130,7 @@ export default function Dashboard() {
         setDeleteSuccess(false);
       }, 2000);
     } catch (error) {
-      console.error("Error deleting subscription:", error);
+      console.error('Error deleting subscription:', error);
     }
   };
 
@@ -141,17 +141,17 @@ export default function Dashboard() {
 
   const stats = calculateStats();
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
       maximumFractionDigits: 2,
     }).format(value);
 
   const formatDate = (dateString: string) =>
-    new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     }).format(new Date(dateString));
 
   const getDaysUntil = (dateString: string) => {
@@ -159,13 +159,13 @@ export default function Dashboard() {
     const startOfToday = new Date(
       today.getFullYear(),
       today.getMonth(),
-      today.getDate(),
+      today.getDate()
     );
     const targetDate = new Date(dateString);
     const startOfTarget = new Date(
       targetDate.getFullYear(),
       targetDate.getMonth(),
-      targetDate.getDate(),
+      targetDate.getDate()
     );
     const diffMs = startOfTarget.getTime() - startOfToday.getTime();
     return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
@@ -179,12 +179,12 @@ export default function Dashboard() {
     }))
     .filter(
       (subscription) =>
-        subscription.daysUntil >= 1 && subscription.daysUntil <= 20,
+        subscription.daysUntil >= 1 && subscription.daysUntil <= 20
     )
     .sort(
       (a, b) =>
         new Date(a.upcomingRenewal).getTime() -
-        new Date(b.upcomingRenewal).getTime(),
+        new Date(b.upcomingRenewal).getTime()
     );
 
   const todayRenewals = subscriptionList
@@ -197,7 +197,7 @@ export default function Dashboard() {
     .sort(
       (a, b) =>
         new Date(a.upcomingRenewal).getTime() -
-        new Date(b.upcomingRenewal).getTime(),
+        new Date(b.upcomingRenewal).getTime()
     );
 
   return (
@@ -349,7 +349,7 @@ export default function Dashboard() {
                     {formatDate(subscription.upcomingRenewal)}
                   </span>
                   <span className="text-[#FFFFFF] font-medium">
-                    {formatCurrency(subscription.cost)} /{" "}
+                    {formatCurrency(subscription.cost)} /{' '}
                     {subscription.billingInterval}
                   </span>
                 </div>
@@ -387,8 +387,8 @@ export default function Dashboard() {
                   key={subscription._id}
                   className={`rounded-xl border p-5 bg-[#191919] ${
                     isUrgent
-                      ? "border-[#F97316]/60 shadow-[0_0_0_1px_rgba(249,115,22,0.25)]"
-                      : "border-[#2A2A2A]/50"
+                      ? 'border-[#F97316]/60 shadow-[0_0_0_1px_rgba(249,115,22,0.25)]'
+                      : 'border-[#2A2A2A]/50'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -403,8 +403,8 @@ export default function Dashboard() {
                     <span
                       className={`text-xs font-medium px-2 py-1 rounded-full ${
                         isUrgent
-                          ? "bg-[#F97316]/15 text-[#FDBA74]"
-                          : "bg-[#2563EB]/10 text-[#93C5FD]"
+                          ? 'bg-[#F97316]/15 text-[#FDBA74]'
+                          : 'bg-[#2563EB]/10 text-[#93C5FD]'
                       }`}
                     >
                       Renews in {subscription.daysUntil} days
@@ -416,7 +416,7 @@ export default function Dashboard() {
                     </span>
                     <span className="text-[#FFFFFF] font-medium">
                       {formatCurrency(subscription.cost)} /
-                      {" " + subscription.billingInterval}
+                      {' ' + subscription.billingInterval}
                     </span>
                   </div>
                 </div>
