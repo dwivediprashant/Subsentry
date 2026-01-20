@@ -1,12 +1,19 @@
-import express from "express";
+import { Router } from 'express';
+import requireAuth from '../middleware/requireAuth.js';
 import {
-  startGoogleOAuth,
-  googleOAuthCallback
-} from "../controllers/gmailAuthController.js";
+  startGmailAuth,
+  gmailCallback,
+  gmailStatus,
+  disconnectGmail,
+  fetchEmails,
+} from '../controllers/gmailAuthController.js';
 
-const router = express.Router();
+const router = Router();
 
-router.get("/auth/google", startGoogleOAuth);
-router.get("/auth/google/callback", googleOAuthCallback);
+router.get('/connect', requireAuth, startGmailAuth);
+router.get('/callback', gmailCallback);
+router.get('/status', requireAuth, gmailStatus);
+router.post('/disconnect', requireAuth, disconnectGmail);
+router.get('/emails', requireAuth, fetchEmails);
 
 export default router;
