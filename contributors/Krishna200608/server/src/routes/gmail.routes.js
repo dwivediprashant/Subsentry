@@ -5,6 +5,7 @@ import {
     getStatus,
     disconnect,
     fetchEmails,
+    parseEmailsEndpoint,
 } from '../controllers/gmail.controller.js';
 
 const router = Router();
@@ -17,6 +18,7 @@ const router = Router();
  * GET  /api/gmail/status     - Check connection status
  * POST /api/gmail/disconnect - Remove Gmail connection
  * GET  /api/gmail/emails     - Fetch transactional emails
+ * POST /api/gmail/parse      - Parse emails for subscription data
  */
 
 // Start OAuth flow - returns auth URL
@@ -34,5 +36,9 @@ router.post('/disconnect', disconnect);
 // Fetch transactional emails
 router.get('/emails', fetchEmails);
 
+// Parse emails for subscription data
+router.post('/parse', parseEmailsEndpoint);
+
 export default router;
+
 
