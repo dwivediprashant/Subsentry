@@ -30,8 +30,7 @@ export const calculateYearlySpend = (subscriptions = []) => {
   return Math.round(total * 100) / 100;
 };
 
-
-//Convert a subscription into its monthly amount
+// Convert a subscription into its monthly amount
 export const getMonthlyAmount = (subscription) => {
   if (!subscription) return 0;
 

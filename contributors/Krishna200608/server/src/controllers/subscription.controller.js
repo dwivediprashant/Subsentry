@@ -2,7 +2,6 @@ import { Subscription } from '../models/Subscription.js';
 import { validateCreateSubscription } from '../validators/subscription.validator.js';
 import { calculateMonthlySpend, calculateYearlySpend } from '../services/subscriptionMetrics.js';
 
-
 export const createSubscription = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -64,7 +63,6 @@ export const getUserSubscriptions = async (req, res) => {
     });
   }
 };
-
 
 export const updateSubscription = async (req, res) => {
   try {
