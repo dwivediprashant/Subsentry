@@ -19,7 +19,10 @@ export interface Subscription {
 
 export interface SubscriptionResponse {
   data: Subscription[];
-  meta?: any;
+  meta?: {
+    monthlySpend?: number;
+    yearlySpend?: number;
+  };
 }
 
 export async function getSubscriptions(token: string): Promise<SubscriptionResponse> {
@@ -35,7 +38,16 @@ export async function getSubscriptions(token: string): Promise<SubscriptionRespo
     throw new Error('Failed to fetch subscriptions');
   }
 
-  return response.json();
+  const payload = await response.json();
+
+  if (Array.isArray(payload?.subscriptions)) {
+    return {
+      data: payload.subscriptions,
+      meta: payload.meta ?? {},
+    };
+  }
+
+  return payload;
 }
 
 export async function createSubscription(
@@ -97,6 +109,82 @@ export async function deleteSubscription(
     const error = await response.text();
     console.error('Delete subscription error:', error);
     throw new Error('Failed to delete subscription');
+  }
+
+  return response.json();
+}
+
+// ============================================
+// Gmail OAuth API Functions
+// ============================================
+
+export interface GmailStatusResponse {
+  success: boolean;
+  connected: boolean;
+  email?: string;
+  connectedAt?: string;
+  message?: string;
+  error?: string;
+}
+
+export interface GmailAuthResponse {
+  success: boolean;
+  authUrl?: string;
+  error?: string;
+}
+
+/**
+ * Get Gmail OAuth authorization URL
+ */
+export async function getGmailAuthUrl(token: string): Promise<GmailAuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/gmail/auth`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get Gmail auth URL');
+  }
+
+  return response.json();
+}
+
+/**
+ * Get Gmail connection status
+ */
+export async function getGmailStatus(token: string): Promise<GmailStatusResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/gmail/status`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get Gmail status');
+  }
+
+  return response.json();
+}
+
+/**
+ * Disconnect Gmail account
+ */
+export async function disconnectGmail(token: string): Promise<{ success: boolean; message?: string }> {
+  const response = await fetch(`${API_BASE_URL}/api/gmail/disconnect`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to disconnect Gmail');
   }
 
   return response.json();
