@@ -189,3 +189,48 @@ export async function disconnectGmail(token: string): Promise<{ success: boolean
 
   return response.json();
 }
+
+// ============================================
+// Gmail Email Import API Functions  
+// ============================================
+
+export interface ImportResult {
+  serviceName: string;
+  saved: boolean;
+  reason: string;
+}
+
+export interface ImportSubscriptionsResponse {
+  success: boolean;
+  saved: number;
+  skipped: number;
+  errors: number;
+  total: number;
+  results: ImportResult[];
+  message?: string;
+  error?: string;
+}
+
+/**
+ * Import subscriptions from Gmail emails
+ */
+export async function importSubscriptionsFromGmail(
+  token: string,
+  limit: number = 50
+): Promise<ImportSubscriptionsResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/gmail/save?limit=${limit}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to import subscriptions');
+  }
+
+  return response.json();
+}
+
