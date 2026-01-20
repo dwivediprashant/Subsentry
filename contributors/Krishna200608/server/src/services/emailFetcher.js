@@ -33,27 +33,39 @@ const buildSearchQuery = (keywords = SUBSCRIPTION_KEYWORDS) => {
 /**
  * Get valid access token for user, refreshing if needed
  * @param {string} userId - User ID
+ * @param {boolean} forceRefresh - Force token refresh
  * @returns {Object} - { accessToken, gmailToken }
  */
-const getValidAccessToken = async (userId) => {
+const getValidAccessToken = async (userId, forceRefresh = false) => {
     const gmailToken = await GmailToken.findOne({ userId });
 
     if (!gmailToken) {
         throw new Error('Gmail not connected');
     }
 
-    // Check if token is expired
-    const isExpired = new Date() > new Date(gmailToken.expiresAt);
+    // Check if token is expired (with 5 minute buffer)
+    const bufferMs = 5 * 60 * 1000; // 5 minutes
+    const isExpired = forceRefresh || new Date() > new Date(new Date(gmailToken.expiresAt).getTime() - bufferMs);
 
-    if (isExpired) {
+    console.log('[Gmail] Token check:', {
+        expiresAt: gmailToken.expiresAt,
+        isExpired,
+        forceRefresh,
+        now: new Date().toISOString()
+    });
+
+    if (isExpired || forceRefresh) {
+        console.log('[Gmail] Refreshing token...');
         // Refresh the token
         const newTokens = await refreshAccessToken(gmailToken.refreshToken);
 
         // Update stored token
         gmailToken.accessToken = encryptToken(newTokens.access_token);
+        // Fix: expiry_date is already a timestamp, not duration
         gmailToken.expiresAt = new Date(newTokens.expiry_date || Date.now() + 3600 * 1000);
         await gmailToken.save();
 
+        console.log('[Gmail] Token refreshed, new expiry:', gmailToken.expiresAt);
         return { accessToken: newTokens.access_token, gmailToken };
     }
 
@@ -77,14 +89,32 @@ export const fetchTransactionalEmails = async (userId, options = {}) => {
         keywords = SUBSCRIPTION_KEYWORDS
     } = options;
 
-    // Get valid access token
-    const { accessToken } = await getValidAccessToken(userId);
+    // Helper function to perform the search
+    const performSearch = async (forceRefresh = false) => {
+        const { accessToken } = await getValidAccessToken(userId, forceRefresh);
+        const query = buildSearchQuery(keywords);
+        return { accessToken, searchResult: await searchEmails(accessToken, query, maxResults, pageToken) };
+    };
 
-    // Build search query
-    const query = buildSearchQuery(keywords);
+    let accessToken;
+    let searchResult;
 
-    // Search for matching emails
-    const searchResult = await searchEmails(accessToken, query, maxResults, pageToken);
+    try {
+        // First attempt
+        const result = await performSearch(false);
+        accessToken = result.accessToken;
+        searchResult = result.searchResult;
+    } catch (error) {
+        // If Invalid Credentials, force refresh and retry
+        if (error.message?.includes('Invalid Credentials')) {
+            console.log('[Gmail] Invalid credentials, forcing token refresh and retrying...');
+            const result = await performSearch(true);
+            accessToken = result.accessToken;
+            searchResult = result.searchResult;
+        } else {
+            throw error;
+        }
+    }
 
     if (!searchResult.messages || searchResult.messages.length === 0) {
         return {

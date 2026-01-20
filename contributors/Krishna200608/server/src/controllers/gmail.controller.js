@@ -9,6 +9,7 @@ import {
     generateState,
 } from '../config/gmail.config.js';
 import { fetchTransactionalEmails } from '../services/emailFetcher.js';
+import { parseEmails as parseEmailsService, parseAndGroupByService } from '../services/emailParser.js';
 
 // In-memory state store for CSRF protection (use Redis in production)
 const stateStore = new Map();
@@ -293,3 +294,75 @@ export const fetchEmails = async (req, res) => {
     }
 };
 
+/**
+ * Parse fetched emails for subscription data
+ * POST /api/gmail/parse
+ */
+export const parseEmailsEndpoint = async (req, res) => {
+    try {
+        if (!req.user?.id) {
+            return res.status(401).json({
+                success: false,
+                error: 'Authentication required',
+            });
+        }
+
+        // Option 1: Parse provided emails from request body
+        if (req.body.emails && Array.isArray(req.body.emails)) {
+            const parsed = parseEmailsService(req.body.emails);
+            const grouped = req.body.groupByService ? parseAndGroupByService(req.body.emails) : null;
+
+            return res.json({
+                success: true,
+                parsed,
+                grouped,
+                count: parsed.length,
+            });
+        }
+
+        // Option 2: Fetch and parse emails
+        const maxResults = Math.min(parseInt(req.query.limit) || 20, 100);
+        const pageToken = req.query.pageToken || null;
+
+        // Fetch emails first
+        const fetchResult = await fetchTransactionalEmails(req.user.id, {
+            maxResults,
+            pageToken,
+        });
+
+        if (!fetchResult.emails || fetchResult.emails.length === 0) {
+            return res.json({
+                success: true,
+                parsed: [],
+                message: 'No emails to parse',
+            });
+        }
+
+        // Parse fetched emails
+        const parsed = parseEmailsService(fetchResult.emails);
+        const grouped = parseAndGroupByService(fetchResult.emails);
+
+        res.json({
+            success: true,
+            parsed,
+            grouped,
+            count: parsed.length,
+            nextPageToken: fetchResult.nextPageToken,
+        });
+    } catch (error) {
+        console.error('[Parse Emails] ERROR:', error.message);
+        console.error('[Parse Emails] Stack:', error.stack);
+
+        if (error.message === 'Gmail not connected') {
+            return res.status(400).json({
+                success: false,
+                error: 'Gmail not connected. Please connect your Gmail first.',
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            error: 'Failed to parse emails',
+        });
+    }
+};
