@@ -10,6 +10,7 @@ import {
 } from '../config/gmail.config.js';
 import { fetchTransactionalEmails } from '../services/emailFetcher.js';
 import { parseEmails as parseEmailsService, parseAndGroupByService } from '../services/emailParser.js';
+import { saveEmailSubscriptions } from '../services/subscriptionSaver.js';
 
 // In-memory state store for CSRF protection (use Redis in production)
 const stateStore = new Map();
@@ -363,6 +364,66 @@ export const parseEmailsEndpoint = async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to parse emails',
+        });
+    }
+};
+
+/**
+ * Save subscriptions from parsed emails
+ * POST /api/gmail/save
+ */
+export const saveSubscriptions = async (req, res) => {
+    try {
+        if (!req.user?.id) {
+            return res.status(401).json({
+                success: false,
+                error: 'Authentication required',
+            });
+        }
+
+        // Option 1: Use provided parsed emails from request body
+        let parsedEmails = req.body.parsedEmails;
+
+        // Option 2: Fetch and parse if not provided
+        if (!parsedEmails || !Array.isArray(parsedEmails) || parsedEmails.length === 0) {
+            const maxResults = Math.min(parseInt(req.query.limit) || 50, 100);
+
+            const fetchResult = await fetchTransactionalEmails(req.user.id, {
+                maxResults,
+            });
+
+            if (!fetchResult.emails || fetchResult.emails.length === 0) {
+                return res.json({
+                    success: true,
+                    saved: 0,
+                    skipped: 0,
+                    message: 'No emails to process',
+                });
+            }
+
+            parsedEmails = parseEmailsService(fetchResult.emails);
+        }
+
+        // Save subscriptions with deduplication
+        const result = await saveEmailSubscriptions(parsedEmails, req.user.id);
+
+        res.json({
+            success: true,
+            ...result,
+        });
+    } catch (error) {
+        console.error('[Save Subscriptions] ERROR:', error.message);
+
+        if (error.message === 'Gmail not connected') {
+            return res.status(400).json({
+                success: false,
+                error: 'Gmail not connected. Please connect your Gmail first.',
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            error: 'Failed to save subscriptions',
         });
     }
 };
