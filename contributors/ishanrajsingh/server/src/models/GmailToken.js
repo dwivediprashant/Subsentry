@@ -2,6 +2,11 @@ import mongoose from 'mongoose';
 
 const { Schema, model } = mongoose;
 
+export default mongoose.model("GmailToken", gmailTokenSchema);
+import mongoose from 'mongoose';
+
+const { Schema, model } = mongoose;
+
 const GmailOAuthSchema = new Schema(
   {
     userId: {
