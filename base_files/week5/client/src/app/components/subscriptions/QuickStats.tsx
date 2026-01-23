@@ -80,7 +80,7 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
@@ -95,7 +95,7 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
               transition={{ delay: index * 0.1 }}
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                   {stat.label}
                 </span>
                 <motion.div 
@@ -114,7 +114,7 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
                   <AnimatedCounter value={stat.value} duration={0.8} />
                 )}
               </div>
-              <div className={`text-xs ${stat.highlight ? stat.iconColor : 'text-gray-500'}`}>
+              <div className={`text-xs ${stat.highlight ? stat.iconColor : 'text-gray-400'}`}>
                 {stat.change}
               </div>
             </motion.div>
