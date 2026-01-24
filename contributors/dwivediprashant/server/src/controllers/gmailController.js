@@ -3,6 +3,7 @@ const {
   exchangeCodeForTokens,
   refreshAccessTokenIfNeeded,
   getStoredTokens,
+  fetchTransactionalEmails,
 } = require("../services/gmailService");
 
 const getAuthUrl = async (req, res) => {
@@ -94,8 +95,49 @@ const getStatus = async (req, res) => {
   }
 };
 
+const getTransactionalEmails = async (req, res) => {
+  try {
+    const { userId, q, limit, pageToken } = req.query;
+    const maxResults = limit ? Number(limit) : 10;
+
+    if (Number.isNaN(maxResults) || maxResults <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Limit must be a positive number.",
+      });
+    }
+
+    const result = await fetchTransactionalEmails({
+      userId: userId || "default",
+      query: q,
+      maxResults,
+      pageToken,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: result.emails.length
+        ? "Transactional emails fetched."
+        : "No matching transactional emails found.",
+      data: result,
+    });
+  } catch (error) {
+    const statusCode =
+      error.code || error.status || error.response?.status || 500;
+    const isRateLimit = statusCode === 429;
+
+    return res.status(statusCode).json({
+      success: false,
+      message: isRateLimit
+        ? "Gmail API rate limit exceeded. Please retry later."
+        : error.message || "Failed to fetch transactional emails.",
+    });
+  }
+};
+
 module.exports = {
   getAuthUrl,
   handleCallback,
   getStatus,
+  getTransactionalEmails,
 };
