@@ -1,8 +1,9 @@
 'use client';
 
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
-export type SortField = 'renewalDate' | 'amount' | 'name' | 'createdAt';
+export type SortField = 'renewalDate' | 'amount' | 'name' | 'createdAt' | 'category';
 export type SortOrder = 'asc' | 'desc';
 
 interface SortDropdownProps {
@@ -17,6 +18,7 @@ const sortOptions: { value: SortField; label: string }[] = [
   { value: 'amount', label: 'Amount' },
   { value: 'name', label: 'Name' },
   { value: 'createdAt', label: 'Date Added' },
+  { value: 'category', label: 'Category' },
 ];
 
 export default function SortDropdown({
@@ -28,7 +30,7 @@ export default function SortDropdown({
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm text-gray-400 hidden sm:inline">Sort by</span>
-
+      
       <div className="relative">
         <select
           value={sortField}

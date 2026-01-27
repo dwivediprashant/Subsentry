@@ -12,8 +12,8 @@ import {
   getSourceIcon,
 } from '@/lib/utils';
 import { getServiceIcon, getServiceColors } from '@/lib/service-icons';
-import {
-  Calendar,
+import { 
+  Calendar, 
   AlertTriangle,
   MoreVertical,
   ExternalLink,
@@ -56,11 +56,10 @@ export default function SubscriptionCard({
   const daysUntil = getDaysUntilRenewal(subscription.renewalDate);
   const isUrgent = isUrgentRenewal(subscription.renewalDate);
   const categoryColors = getCategoryColor(subscription.category);
-
-  // Trial Logic
+  
   const isTrial = subscription.isTrial;
   const isTrialEndingSoon = isTrial && daysUntil <= 3 && daysUntil >= 0;
-
+  
   // Get service-specific icon and colors
   const serviceIcon = getServiceIcon(subscription.name);
   const serviceColors = getServiceColors(subscription.name);
@@ -86,7 +85,7 @@ export default function SubscriptionCard({
   const borderColor = isTrialEndingSoon
     ? 'border-amber-500/50 hover:border-amber-500'
     : isUrgent
-      ? 'border-red-500/30 hover:border-red-500/50'
+      ? 'border-amber-500/30 hover:border-amber-500/50'
       : 'border-[#1a1a1a] hover:border-[#2a2a2a]';
 
   const glowStyles = isTrialEndingSoon
@@ -108,7 +107,7 @@ export default function SubscriptionCard({
           )}
         >
           {/* Icon/Logo */}
-          <motion.div
+          <motion.div 
             whileHover={{ rotate: [0, -10, 10, 0] }}
             transition={{ duration: 0.4 }}
             className={cn(
@@ -125,7 +124,10 @@ export default function SubscriptionCard({
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-white truncate">{subscription.name}</h3>
               {isTrial ? (
-                <Badge variant={isTrialEndingSoon ? "warning" : "secondary"} className="text-[10px] uppercase tracking-wider font-bold h-5">
+                <Badge
+                  variant={isTrialEndingSoon ? 'warning' : 'secondary'}
+                  className="text-[10px] uppercase tracking-wider font-bold h-5"
+                >
                   Free Trial
                 </Badge>
               ) : null}
@@ -147,7 +149,9 @@ export default function SubscriptionCard({
               {formatCurrency(subscription.amount, subscription.currency)}
             </div>
             <div className="text-xs text-gray-400">
-              {isTrial ? 'after trial' : `/${subscription.billingCycle === 'yearly' ? 'year' : subscription.billingCycle === 'weekly' ? 'week' : 'month'}`}
+              {isTrial
+                ? 'after trial'
+                : `/${subscription.billingCycle === 'yearly' ? 'year' : subscription.billingCycle === 'weekly' ? 'week' : 'month'}`}
             </div>
           </div>
 
@@ -156,10 +160,14 @@ export default function SubscriptionCard({
             <TooltipTrigger asChild>
               <div className={cn(
                 'text-right hidden md:block cursor-help min-w-[100px]',
-                isTrialEndingSoon ? 'text-amber-400' : isUrgent ? 'text-red-400' : 'text-gray-400'
+                isTrialEndingSoon ? 'text-amber-400' : isUrgent ? 'text-amber-400' : 'text-gray-400'
               )}>
                 <div className="flex items-center gap-1.5 justify-end">
-                  {isTrialEndingSoon ? <Clock className="w-3.5 h-3.5 animate-pulse" /> : isUrgent && <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />}
+                  {isTrialEndingSoon ? (
+                    <Clock className="w-3.5 h-3.5 animate-pulse" />
+                  ) : (
+                    isUrgent && <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />
+                  )}
                   <span className="text-sm font-medium">{getRenewalText()}</span>
                 </div>
                 <div className="text-xs text-gray-400">{formatDate(subscription.renewalDate)}</div>
@@ -171,16 +179,17 @@ export default function SubscriptionCard({
           </Tooltip>
 
           {/* Status Badge */}
-          <Badge
+          <Badge 
             variant={
-              isTrial ? 'secondary' :
-                subscription.status === 'active' ? 'success' :
-                  subscription.status === 'cancelled' ? 'destructive' : 'secondary'
+              isTrial
+                ? 'secondary'
+                : subscription.status === 'active'
+                  ? 'success'
+                  : subscription.status === 'cancelled'
+                    ? 'destructive'
+                    : 'secondary'
             }
-            className={cn(
-              "hidden lg:flex capitalize",
-              isTrial && "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
-            )}
+            className={cn('hidden lg:flex capitalize', isTrial && 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20')}
           >
             {isTrial ? 'Trial Active' : subscription.status}
           </Badge>
@@ -236,26 +245,26 @@ export default function SubscriptionCard({
       >
         {/* Spotlight effect on hover */}
         <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
+        
         {/* Urgent Banner */}
         {isTrialEndingSoon && (
-          <motion.div
+          <motion.div 
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            className="absolute -top-px left-4 right-4 h-1 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-b-full origin-left shadow-[0_2px_10px_rgba(245,158,11,0.5)]"
+            className="absolute -top-px left-4 right-4 h-1 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-b-full origin-left shadow-[0_2px_10px_rgba(245,158,11,0.5)]" 
           />
         )}
         {!isTrialEndingSoon && isUrgent && (
-          <motion.div
+          <motion.div 
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            className="absolute -top-px left-4 right-4 h-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-b-full origin-left"
+            className="absolute -top-px left-4 right-4 h-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-b-full origin-left" 
           />
         )}
 
         {/* Header */}
         <div className="relative flex items-start justify-between mb-4">
-          <motion.div
+          <motion.div 
             whileHover={{ rotate: [0, -5, 5, 0], scale: 1.05 }}
             transition={{ duration: 0.4 }}
             className={cn(
@@ -272,21 +281,21 @@ export default function SubscriptionCard({
               <Badge
                 variant="secondary"
                 className={cn(
-                  "capitalize border-blue-500/20 text-blue-400 bg-blue-500/10",
-                  isTrialEndingSoon && "animate-pulse border-amber-500/30 text-amber-400 bg-amber-500/10"
+                  'capitalize border-blue-500/20 text-blue-400 bg-blue-500/10',
+                  isTrialEndingSoon && 'animate-pulse border-amber-500/30 text-amber-400 bg-amber-500/10'
                 )}
               >
                 Trial
               </Badge>
             ) : (
-              <Badge
+              <Badge 
                 variant={subscription.status === 'active' ? 'success' : subscription.status === 'cancelled' ? 'destructive' : 'secondary'}
                 className="capitalize"
               >
                 {subscription.status}
               </Badge>
             )}
-
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <motion.button
@@ -323,19 +332,19 @@ export default function SubscriptionCard({
         <div className="relative mb-4">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-white truncate">{subscription.name}</h3>
-            {isTrial && <Badge variant="warning" className="text-[10px] h-4 px-1 py-0">FREE TRIAL</Badge>}
+            {isTrial && <Badge variant="warning" className="text-[10px] shrink-0">FREE TRIAL</Badge>}
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className={cn(categoryColors.bg, categoryColors.text, 'border-0')}>
               {subscription.category}
             </Badge>
-            <span className="text-xs text-gray-400">{getSourceIcon(subscription.source)}</span>
+            <span className="text-xs text-gray-500">{getSourceIcon(subscription.source)}</span>
           </div>
         </div>
 
         {/* Price */}
         <div className="relative mb-4">
-          <motion.div
+          <motion.div 
             className="text-2xl font-bold text-white flex items-baseline gap-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -354,7 +363,7 @@ export default function SubscriptionCard({
           <TooltipTrigger asChild>
             <div className={cn(
               'relative flex items-center justify-between pt-4 border-t border-[#1a1a1a] cursor-help',
-              isTrialEndingSoon ? 'text-amber-400 font-medium' : isUrgent ? 'text-red-400' : 'text-gray-400'
+              isTrialEndingSoon ? 'text-amber-400 font-medium' : isUrgent ? 'text-amber-400' : 'text-gray-400'
             )}>
               <div className="flex items-center gap-2">
                 {isTrialEndingSoon ? (
@@ -379,4 +388,3 @@ export default function SubscriptionCard({
     </TooltipProvider>
   );
 }
-

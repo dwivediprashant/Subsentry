@@ -1,32 +1,38 @@
 'use client';
 
 import { Subscription } from '@/lib/api';
-import { formatCurrency, isUrgentRenewal, getDaysUntilRenewal } from '@/lib/utils';
+import { convertCurrency, formatCurrency, isUrgentRenewal, getDaysUntilRenewal } from '@/lib/utils';
 import { DollarSign, CreditCard, AlertTriangle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SpotlightCard, AnimatedCounter } from '@/components/ui/aceternity';
 
 interface QuickStatsProps {
   subscriptions: Subscription[];
+  displayCurrency: string;
 }
 
-export default function QuickStats({ subscriptions }: QuickStatsProps) {
+export default function QuickStats({ subscriptions, displayCurrency }: QuickStatsProps) {
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active');
 
   const monthlyTotal = activeSubscriptions.reduce((sum, sub) => {
-    if (sub.billingCycle === 'monthly') return sum + sub.amount;
-    if (sub.billingCycle === 'yearly') return sum + (sub.amount / 12);
-    if (sub.billingCycle === 'weekly') return sum + (sub.amount * 4.33);
-    return sum + sub.amount;
+    const amountInDisplay = convertCurrency(
+      sub.amount,
+      sub.currency || 'USD',
+      displayCurrency
+    );
+    if (sub.billingCycle === 'monthly') return sum + amountInDisplay;
+    if (sub.billingCycle === 'yearly') return sum + (amountInDisplay / 12);
+    if (sub.billingCycle === 'weekly') return sum + (amountInDisplay * 4.33);
+    return sum + amountInDisplay;
   }, 0);
 
   const yearlyTotal = monthlyTotal * 12;
 
-  const urgentRenewals = subscriptions.filter(s =>
+  const urgentRenewals = subscriptions.filter(s => 
     s.status === 'active' && isUrgentRenewal(s.renewalDate)
   ).length;
 
-  const trialsEnding = subscriptions.filter(s =>
+  const trialsEnding = subscriptions.filter(s => 
     s.isTrial && s.trialEndsAt && getDaysUntilRenewal(s.trialEndsAt) <= 7
   ).length;
 
@@ -34,12 +40,12 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
     {
       label: 'Monthly Spend',
       value: monthlyTotal,
-      displayValue: formatCurrency(monthlyTotal),
+      displayValue: formatCurrency(monthlyTotal, displayCurrency),
       icon: DollarSign,
       iconBg: 'bg-blue-500/20',
       iconColor: 'text-blue-400',
       spotlightColor: 'rgba(59, 130, 246, 0.15)',
-      change: `${formatCurrency(yearlyTotal)}/year`,
+      change: `${formatCurrency(yearlyTotal, displayCurrency)}/year`,
       isMonetary: true,
     },
     {
@@ -98,7 +104,7 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
                 <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                   {stat.label}
                 </span>
-                <motion.div
+                <motion.div 
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   className={`w-8 h-8 rounded-lg ${stat.iconBg} flex items-center justify-center`}
                 >
