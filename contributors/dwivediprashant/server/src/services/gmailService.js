@@ -23,6 +23,7 @@ const saveTokens = async (userId, tokens) => {
   if (!tokens || !tokens.access_token) {
     throw new Error("Missing access token.");
   }
+
   if (!tokens.refresh_token) {
     const existing = await GmailToken.findOne({ userId });
     if (!existing) {
@@ -126,6 +127,18 @@ const refreshAccessTokenIfNeeded = async (userId) => {
   }
 
   const updated = oAuth2Client.credentials;
+  if (!updated.access_token || !updated.expiry_date) {
+    throw new Error("Failed to refresh access token.");
+  }
+
+  await saveTokens(userId, {
+    access_token: updated.access_token || token,
+    refresh_token:
+      updated.refresh_token || oAuth2Client.credentials.refresh_token,
+    scope: updated.scope,
+    token_type: updated.token_type,
+    expiry_date: updated.expiry_date,
+  });
   if (!updated.expiry_date) {
     await oAuth2Client.getAccessToken();
 
