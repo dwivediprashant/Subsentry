@@ -15,18 +15,42 @@ export default function SubscriptionCard({
   onEdit,
   onDelete,
 }: SubscriptionCardProperties) {
+  // Returns a badge for the subscription status, with special handling for trial
   const getStatusBadge = () => {
+    if (subscription.serviceStatus === "trial") {
+      // Highlight trial badge, especially if ending soon
+      let trialSoon = false;
+      let trialEndsText = "Trial";
+      if (subscription.trialEndDate) {
+        const end = new Date(subscription.trialEndDate);
+        const now = new Date();
+        const days = Math.ceil(
+          (end.getTime() - now.getTime()) / (1000 * 3600 * 24),
+        );
+        if (days <= 3) trialSoon = true;
+        if (days > 1) trialEndsText = `Trial ends in ${days} days`;
+        else if (days === 1) trialEndsText = "Trial ends tomorrow";
+        else if (days === 0) trialEndsText = "Trial ends today";
+        else if (days < 0) trialEndsText = "Trial ended";
+        else
+          trialEndsText = `Trial ends on ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+      }
+      return (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-colors duration-200
+            ${trialSoon ? "bg-[#EF4444]/20 text-[#EF4444] border-[#EF4444]/30 animate-pulse" : "bg-[#F59E0B]/20 text-[#F59E0B] border-[#F59E0B]/30"}
+          `}
+          style={{ minWidth: 80, justifyContent: "center" }}
+        >
+          {trialEndsText}
+        </span>
+      );
+    }
     switch (subscription.serviceStatus) {
       case "active":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30">
             Active
-          </span>
-        );
-      case "trial":
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/30">
-            Trial
           </span>
         );
       case "cancelled":
@@ -50,7 +74,7 @@ export default function SubscriptionCard({
     const renewalDate = new Date(subscription.upcomingRenewal);
     const today = new Date();
     const daysUntilRenewal = Math.ceil(
-      (renewalDate.getTime() - today.getTime()) / (1000 * 3600 * 24)
+      (renewalDate.getTime() - today.getTime()) / (1000 * 3600 * 24),
     );
 
     if (daysUntilRenewal === 0) return "Today";
@@ -83,23 +107,7 @@ export default function SubscriptionCard({
       className={`bg-gradient-to-br from-[#191919] to-[#282828] rounded-xl border h-full relative border-[#2A2A2A]/50 backdrop-blur-sm p-6 transition-all duration-300 hover:shadow-xl hover:border-[#FFDE21] hover:scale-[1.02] cursor-pointer flex flex-col`}
     >
       {/* Status Badge Ribbon */}
-      <div className="absolute -top-2 -right-2">
-        <div
-          className={`relative ${
-            subscription.serviceStatus === "active"
-              ? "bg-[#10B981]"
-              : subscription.serviceStatus === "trial"
-              ? "bg-[#3B82F6]"
-              : subscription.serviceStatus === "cancelled"
-              ? "bg-[#EF4444]"
-              : "bg-[#6B7280]"
-          } text-white text-xs font-semibold px-3 py-1 shadow-lg rounded-t-lg rounded-bl-lg`}
-        >
-          <div className="absolute top-0 right-0 w-0 h-0 border-l-8 border-l-transparent border-t-8 border-t-transparent border-r-8 border-r-transparent transform translate-x-2"></div>
-          {subscription.serviceStatus.charAt(0).toUpperCase() +
-            subscription.serviceStatus.slice(1)}
-        </div>
-      </div>
+      <div className="absolute -top-2 -right-2 z-10">{getStatusBadge()}</div>
       {/* Header with logo, status and urgent indicator */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-4 flex-1">
@@ -109,7 +117,7 @@ export default function SubscriptionCard({
             className="w-12 h-12 rounded-lg object-cover"
             onError={(e) => {
               e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                subscription.serviceName
+                subscription.serviceName,
               )}&background=191919&color=ffffff&size=48`;
             }}
           />
@@ -160,17 +168,30 @@ export default function SubscriptionCard({
         </div>
       </div>
 
-      {/* Trial information */}
-      {subscription.trialPeriod && (
-        <div className="bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-lg p-3 mb-4 backdrop-blur-sm">
+      {/* Trial information, always visible and robust */}
+      {subscription.serviceStatus === "trial" && (
+        <div className="rounded-lg p-3 mb-4 flex flex-col gap-1 bg-yellow-400/90 border-2 border-yellow-500 shadow-lg animate-pulse">
           <div className="flex items-center gap-2">
-            <span className="text-[#F59E0B]">⏱</span>
-            <span className="text-[#F59E0B] text-sm font-medium">
-              Trial Period
+            <span className="text-yellow-900 text-lg">⏱</span>
+            <span className="text-yellow-900 text-base font-bold">
+              Trial period active
             </span>
           </div>
-          <div className="text-xs text-[#B3B3B3] mt-1">
-            Trial subscription active
+          <div className="text-xs text-yellow-900 font-semibold mt-1">
+            {(() => {
+              const end = subscription.trialEndDate
+                ? new Date(subscription.trialEndDate)
+                : new Date(subscription.upcomingRenewal);
+              const now = new Date();
+              const days = Math.ceil(
+                (end.getTime() - now.getTime()) / (1000 * 3600 * 24),
+              );
+              if (days > 1) return `Trial ends in ${days} days`;
+              if (days === 1) return "Trial ends tomorrow";
+              if (days === 0) return "Trial ends today";
+              if (days < 0) return "Trial ended";
+              return `Trial ends on ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+            })()}
           </div>
         </div>
       )}
