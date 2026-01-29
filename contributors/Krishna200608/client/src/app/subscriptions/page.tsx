@@ -8,7 +8,7 @@ import {
   getSubscriptions,
   updateSubscription,
 } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { cn, CURRENCY_OPTIONS } from '@/lib/utils';
 import { useAuth } from '@clerk/nextjs';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2, RefreshCw } from 'lucide-react';
@@ -36,6 +36,7 @@ export default function SubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [displayCurrency, setDisplayCurrency] = useState('USD');
 
   // View state
   const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -98,7 +99,6 @@ export default function SubscriptionsPage() {
       if (statusFilter === 'trial') {
         result = result.filter((s) => s.isTrial);
       } else if (statusFilter === 'active') {
-        // Show only non-trial active subscriptions when filtering by "Active"
         result = result.filter((s) => s.status === 'active' && !s.isTrial);
       } else {
         result = result.filter((s) => s.status === statusFilter);
@@ -129,6 +129,9 @@ export default function SubscriptionsPage() {
         case 'createdAt':
           comparison =
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case 'category':
+          comparison = a.category.localeCompare(b.category);
           break;
       }
       return sortOrder === 'asc' ? comparison : -comparison;
@@ -202,7 +205,21 @@ export default function SubscriptionsPage() {
       {/* Quick Stats */}
       {!isLoading && subscriptions.length > 0 && (
         <div className="mb-6">
-          <QuickStats subscriptions={subscriptions} />
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="text-sm text-gray-400">Totals shown in</div>
+            <select
+              value={displayCurrency}
+              onChange={(e) => setDisplayCurrency(e.target.value)}
+              className="appearance-none px-3 py-2 text-sm rounded-lg border border-[#2a2a2a] bg-[#0f0f0f] text-gray-300 outline-none cursor-pointer hover:border-[#3a3a3a] transition-colors"
+            >
+              {CURRENCY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <QuickStats subscriptions={subscriptions} displayCurrency={displayCurrency} />
         </div>
       )}
 
