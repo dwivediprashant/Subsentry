@@ -6,7 +6,7 @@ This folder is the Week 6 snapshot. It starts from Week 5 and focuses on **advan
 
 Level-up ingestion and insights: add vendor confidence scoring, real analytics, and renewal alert rules.
 
-## Issues Covered (Planned)
+## Issues Covered
 
 ### Issue 24: Gmail Ingestion v2 — Vendor Resolver + Confidence Scoring (Competitive)
 - Vendor normalization + confidence scoring
@@ -25,10 +25,10 @@ Level-up ingestion and insights: add vendor confidence scoring, real analytics, 
 ## Progress Checklist
 
 Backend (Week 6)
-- [ ] Vendor resolver + confidence scoring
-- [ ] Candidate deduping and metadata
-- [ ] Analytics overview endpoint
-- [ ] Alerts rule endpoints + upcoming renewals
+- [x] Vendor resolver + confidence scoring
+- [x] Candidate deduping and metadata
+- [x] Analytics overview endpoint
+- [x] Alerts rule endpoints + upcoming renewals
 
 Frontend (Week 6)
 - [ ] No UI changes required (backend-only week)
@@ -37,9 +37,9 @@ Frontend (Week 6)
 
 | Issue | Focus Area | Contributors (PRs) |
 | ----: | ---------- | ------------------ |
-| **24** | Vendor Resolver + Confidence | _pending integration_ |
-| **25** | Analytics Engine | _pending integration_ |
-| **26** | Renewal Alerts API | _pending integration_ |
+| **24** | Vendor Resolver + Confidence | Krishna200608 (**#279**) |
+| **25** | Analytics Engine | Krishna200608 (**#280**) |
+| **26** | Renewal Alerts API | Krishna200608 (**#281**) |
 
 ## Structure
 
